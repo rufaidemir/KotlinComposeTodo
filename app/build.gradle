@@ -83,6 +83,9 @@ dependencies {
     // CLOCK
     implementation "com.maxkeppeler.sheets-compose-dialogs:clock:$modalPopupVersion"
 
+    // OPTION
+    implementation "com.maxkeppeler.sheets-compose-dialogs:option:$modalPopupVersion"
+
 //    // DATE TIME
 //    implementation "com.maxkeppeler.sheets-compose-dialogs:date_time:$modalPopupVersion"
 
