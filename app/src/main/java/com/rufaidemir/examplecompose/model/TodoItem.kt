@@ -1,5 +1,6 @@
 package com.rufaidemir.examplecompose.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -13,6 +14,7 @@ data class TodoItem(
     val time: Long? =null,
     val hasInterval:Boolean,
     val interval: Long? =null,
+    val intervalText: String? =null,
     val hasTag: Boolean,
     val tag:String?=null
 ){

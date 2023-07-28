@@ -71,10 +71,8 @@ import androidx.compose.ui.unit.TextUnit
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.rufaidemir.examplecompose.repository.PersonRepository
 import com.rufaidemir.examplecompose.ui.components.AddTodoItemScreen
-import com.rufaidemir.examplecompose.ui.components.CustomItem
-import com.rufaidemir.examplecompose.ui.components.TodoItem
+import com.rufaidemir.examplecompose.ui.components.TodoList
 import com.rufaidemir.examplecompose.ui.theme.shape
 import com.rufaidemir.examplecompose.viewmodel.TodoItemViewModel
 
@@ -90,8 +88,13 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    GreetingPreview()
-                    AddTodoItemScreen(todoItemViewModel)
+//                    GreetingPreview()
+                    Column(modifier = Modifier.fillMaxSize()) {
+
+                        AddTodoItemScreen(todoItemViewModel)
+                        TodoList(todoItemViewModel )
+                    }
+
                 }
             }
         }
@@ -99,37 +102,6 @@ class MainActivity : ComponentActivity() {
 }
 
 
-//@Composable
-//fun ColumnScope.CostumItem(weight: Float, color: Color = MaterialTheme.colorScheme.inversePrimary) {
-//    Surface(
-//        modifier = Modifier
-//            .width(200.dp)
-//            .height(50.dp)
-//            .weight(weight),
-//        color = color
-//    ) {}
-//}
-
-
-
-
-val item = TodoItemData(
-    isRepeat = true,
-    isCancelled = false,
-    startDate = System.currentTimeMillis(),
-    todoTitle = "Yapilacak 1 Isim var",
-    colorHex = "#2fc192",
-    repeatInterval = 1256454L,
-    repeatIntervalText = "Haftada Bir"
-)
-val item2 = TodoItemData(
-    isRepeat = false,
-    isCancelled = true,
-    startDate = System.currentTimeMillis(),
-    todoTitle = "Yapilacak 1 Isim var",
-    colorHex = "#55c192",
-    repeatIntervalText = "Haftada Bir"
-)
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
@@ -151,9 +123,10 @@ fun GreetingPreview() {
 //            Spacer(modifier = Modifier.height(16.dp))
 //            PasswordIndput()
 //            FlatList()
-            TodoItem(item)
-            TodoItem(item2)
+//            TodoItem(item)
+//            TodoItem(item2)
             Spacer(modifier = Modifier.height(10.dp))
+//            ExpandableCard("sadas",)
 
 
         }
@@ -168,20 +141,6 @@ fun GradientButton(text: String, textColor: Color, gradient: Brush, onClicked: (
 }
 
 
-@Composable
-fun FlatList() {
-    var personList = PersonRepository().getAllData()
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(items = personList) {
-            CustomItem(person = it)
-        }
-
-    }
-}
 
 
 @Composable
@@ -244,15 +203,7 @@ fun CoilImage() { //NOT :BU componene uses permission internet izni olmadan hata
 }
 
 
-data class TodoItemData(
-    val isRepeat: Boolean,
-    val isCancelled: Boolean,
-    val startDate: Long,
-    val todoTitle: String,
-    val colorHex:String,
-    val repeatInterval: Long? =null,
-    val repeatIntervalText: String?=null
-)
+
 
 
 @Composable

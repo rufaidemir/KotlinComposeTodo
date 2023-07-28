@@ -3,16 +3,18 @@ package com.rufaidemir.examplecompose.services
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.rufaidemir.examplecompose.model.TodoItem
 
 @Dao
 interface TodoItemDAO {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addItem(vararg item: TodoItem):List<Long>
 
-    @Query("SELECT * FROM todotable")
+
+    @Query("SELECT * FROM todotable ORDER BY uuid DESC")
     suspend fun getAllItems(): List<TodoItem>
 
     @Query("SELECT * FROM todotable WHERE uuid = :id")

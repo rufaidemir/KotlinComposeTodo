@@ -29,8 +29,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.rufaidemir.examplecompose.R
-import com.rufaidemir.examplecompose.TodoItemData
-import com.rufaidemir.examplecompose.util.hexToComposeColor
+import com.rufaidemir.examplecompose.model.TodoItem
 import java.text.DateFormat
 
 
@@ -38,12 +37,13 @@ import java.text.DateFormat
 
 
 @Composable
-fun TodoItem( item : TodoItemData) {
+fun TodoItem( item : TodoItem) {
 
+    val itemColor = if(item.hasColor) Color(item.color!!) else MaterialTheme.colorScheme.background
     val rowHeight = 60.dp
-    val leftIcon = if (item.isRepeat) {
+    val leftIcon = if (item.hasInterval) {
         painterResource(id = R.drawable.baseline_repeat_24)
-    } else if (item.isCancelled) {
+    } else if (item.hasTag && item.tag=="Iptal") {
         painterResource(id = R.drawable.baseline_cancel_24)
     } else {
         painterResource(id = R.drawable.baseline_fireplace_24)
@@ -71,14 +71,22 @@ fun TodoItem( item : TodoItemData) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(leftIcon, contentDescription = "", tint = if (item.isCancelled) Color.Red else hexToComposeColor(item.colorHex))
+                Icon(
+                    leftIcon,
+                    contentDescription = "",
+                    tint = if (item.hasTag && item.tag == "Iptal") {
+                        Color.Red
+                    } else {
+                        itemColor
+                    }
+                )
 
             }
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
                     .width(1.dp)
-                    .background(hexToComposeColor(item.colorHex))
+                    .background(itemColor)
             )
             Column(
                 modifier = Modifier
@@ -93,29 +101,29 @@ fun TodoItem( item : TodoItemData) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = DateFormat.getInstance().format(item.startDate),
+                        text = DateFormat.getInstance().format(item.time),
                         fontSize = MaterialTheme.typography.labelSmall.fontSize
                     )
-                    if (item.isRepeat && item.repeatInterval!=null){
+                    if (item.hasInterval && item.interval!=null){
                         Text(
-                            text ="${item.repeatIntervalText.toString()}",
+                            text ="${item.intervalText}",
                             fontSize = MaterialTheme.typography.labelSmall.fontSize
                         )
                     }
                 }
                 Text(
-                    text = item.todoTitle,
+                    text = item.title,
                     fontSize = MaterialTheme.typography.labelLarge.fontSize,
                     maxLines = 1,
                     overflow = TextOverflow.Clip,
-                    style = TextStyle(textDecoration = if (item.isCancelled) TextDecoration.LineThrough else TextDecoration.None)
+                    style = TextStyle(textDecoration = if (item.hasTag && item.tag=="Iptal") TextDecoration.LineThrough else TextDecoration.None)
                 )
             }
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
                     .width(1.dp)
-                    .background(hexToComposeColor(item.colorHex))
+                    .background(itemColor)
             )
             Column(
                 modifier = Modifier
@@ -129,7 +137,7 @@ fun TodoItem( item : TodoItemData) {
                         .height(10.dp)
                         .width(10.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(hexToComposeColor(item.colorHex))
+                        .background(itemColor)
 
                 )
             }

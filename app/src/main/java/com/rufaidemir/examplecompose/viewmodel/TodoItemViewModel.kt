@@ -4,23 +4,29 @@ import android.app.Application
 import androidx.lifecycle.MutableLiveData
 import com.rufaidemir.examplecompose.model.TodoItem
 import com.rufaidemir.examplecompose.services.TodoDatabase
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 
 class TodoItemViewModel(application: Application):BaseViewModel(application) {
 
-    var mutTodoItems = MutableLiveData<List<TodoItem>>()
-    var mutCurrentItem = MutableLiveData<TodoItem>()
+    private val _mutTodoItems = MutableStateFlow<List<TodoItem>>(emptyList())
+    private val _mutCurrentItem = MutableStateFlow<TodoItem?>(null)
 
-    fun getAllItems(){
+    var mutTodoItems = _mutTodoItems
+    val mutCurrentItem: StateFlow<TodoItem?> = _mutCurrentItem
+
+    fun getAllItems() {
         launch {
             val dao = TodoDatabase(getApplication()).todoDao()
-            mutTodoItems.value=dao.getAllItems()
+            _mutTodoItems.value = dao.getAllItems()
         }
     }
     fun getItem(id:Int){
         launch {
             val dao = TodoDatabase(getApplication()).todoDao()
-            mutCurrentItem.value=dao.getItem(id)
+            _mutCurrentItem.value=dao.getItem(id)
         }
     }
 

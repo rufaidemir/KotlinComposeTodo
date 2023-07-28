@@ -27,6 +27,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -61,10 +62,8 @@ import com.maxkeppeler.sheets.option.OptionDialog
 import com.maxkeppeler.sheets.option.models.DisplayMode
 import com.maxkeppeler.sheets.option.models.Option
 import com.maxkeppeler.sheets.option.models.OptionConfig
-import com.maxkeppeler.sheets.option.models.OptionDetails
 import com.maxkeppeler.sheets.option.models.OptionSelection
 import com.rufaidemir.examplecompose.R
-import com.rufaidemir.examplecompose.TodoItemData
 import com.rufaidemir.examplecompose.model.TodoItem
 import com.rufaidemir.examplecompose.ui.theme.ExamplecomposeTheme
 import com.rufaidemir.examplecompose.util.colorToHex
@@ -205,7 +204,8 @@ fun AddTodoItemScreen(todoViewModel:TodoItemViewModel) {
     // Ekran tasarımını oluşturuyoruz
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
+//            .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -404,10 +404,6 @@ fun AddTodoItemScreen(todoViewModel:TodoItemViewModel) {
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(24.dp)
                     )
-//                Checkbox(
-//                    checked = isRepeat,
-//                    onCheckedChange = { setIsRepeat(it) }
-//                )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(text = "Tekrar")
                 }
@@ -545,6 +541,7 @@ fun AddTodoItemScreen(todoViewModel:TodoItemViewModel) {
                     time = startDate,
                     hasInterval = isRepeat,
                     interval = repeatInterval,
+                    intervalText = "$repeatInterval $repeatIntervalText",
                     hasTag = hasTag,
                     tag = tagName
                 )
@@ -552,8 +549,13 @@ fun AddTodoItemScreen(todoViewModel:TodoItemViewModel) {
                 if (todoTitle.isNotBlank()){
                     todoViewModel.addItem(todoItem)
                     setTodoTitle("")
+                    setHasTag(false)
+                    setHasTime(false)
+                    sethasColor(false)
+                    setIsRepeat(false)
 //                    TODO navigate or hide modal
                     Toast.makeText(context, "Not eklendi", Toast.LENGTH_SHORT).show()
+                    todoViewModel.getAllItems()
                 }else{
                     Toast.makeText(context, "Lütfen başlık bilgisini giriniz!", Toast.LENGTH_SHORT).show()
                 }
