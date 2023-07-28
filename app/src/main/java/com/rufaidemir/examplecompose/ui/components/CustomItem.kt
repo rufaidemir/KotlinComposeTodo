@@ -1,4 +1,4 @@
-package com.rufaidemir.examplecompose
+package com.rufaidemir.examplecompose.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

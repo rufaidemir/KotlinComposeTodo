@@ -1,5 +1,7 @@
 package com.rufaidemir.examplecompose.ui.components
 
+import android.app.Application
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -32,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -62,10 +65,12 @@ import com.maxkeppeler.sheets.option.models.OptionDetails
 import com.maxkeppeler.sheets.option.models.OptionSelection
 import com.rufaidemir.examplecompose.R
 import com.rufaidemir.examplecompose.TodoItemData
+import com.rufaidemir.examplecompose.model.TodoItem
 import com.rufaidemir.examplecompose.ui.theme.ExamplecomposeTheme
 import com.rufaidemir.examplecompose.util.colorToHex
 import com.rufaidemir.examplecompose.util.hexToComposeColor
 import com.rufaidemir.examplecompose.util.stringToLocalDateTime
+import com.rufaidemir.examplecompose.viewmodel.TodoItemViewModel
 import java.time.LocalDate
 import java.time.ZoneOffset
 
@@ -74,12 +79,13 @@ import java.time.ZoneOffset
 @Composable
 fun AddTodoPreview(){
     ExamplecomposeTheme {
-        AddTodoItemScreen()
+        val todoViewModel = TodoItemViewModel(Application())
+        AddTodoItemScreen(todoViewModel)
     }
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddTodoItemScreen() {
+fun AddTodoItemScreen(todoViewModel:TodoItemViewModel) {
     // Ekleme için giriş bilgilerini tutacak mutable state'leri oluşturuyoruz
     val (isRepeat, setIsRepeat) = remember { mutableStateOf(false) }
     val (isCancelled, setIsCancelled) = remember { mutableStateOf(false) }
@@ -526,19 +532,31 @@ fun AddTodoItemScreen() {
             }
         }
 
+        val context = LocalContext.current
+
         Button(
             onClick = {
                 // Verileri TodoItemData sınıfından oluşturup, onAddItem callback'ini çağırıyoruz
-//                val todoItem = TodoItemData(
-//                    isRepeat = isRepeat,
-//                    isCancelled = isCancelled,
-//                    startDate = startDate,
-//                    todoTitle = todoTitle,
-//                    colorHex = colorHex,
-//                    repeatInterval = repeatInterval,
-//                    repeatIntervalText = repeatIntervalText
-//                )
-//                onAddItem(todoItem)
+                val todoItem = TodoItem(
+                    title = todoTitle,
+                    hasColor = hasColor,
+                    color = selectedColor.toArgb(),
+                    hasTime= hasTime,
+                    time = startDate,
+                    hasInterval = isRepeat,
+                    interval = repeatInterval,
+                    hasTag = hasTag,
+                    tag = tagName
+                )
+
+                if (todoTitle.isNotBlank()){
+                    todoViewModel.addItem(todoItem)
+                    setTodoTitle("")
+//                    TODO navigate or hide modal
+                    Toast.makeText(context, "Not eklendi", Toast.LENGTH_SHORT).show()
+                }else{
+                    Toast.makeText(context, "Lütfen başlık bilgisini giriniz!", Toast.LENGTH_SHORT).show()
+                }
             },
             modifier = Modifier.fillMaxWidth(),
 //            colors = ButtonDefaults.buttonColors(Color.Green)

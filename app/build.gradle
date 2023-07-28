@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
 }
+apply plugin: 'kotlin-kapt'
 
 android {
     namespace 'com.rufaidemir.examplecompose'
@@ -66,9 +67,14 @@ dependencies {
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
 
+//    IMAGE LOADINF ---------KULLANILMADI HENUZ
     implementation("io.coil-kt:coil-compose:2.4.0")
 
-    implementation("com.github.skydoves:colorpicker-compose:1.0.4")
+    // room
+    def room_version = "2.5.2"
+    implementation "androidx.room:room-ktx:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
+
 
     def modalPopupVersion ='1.2.0'
     // CORE
