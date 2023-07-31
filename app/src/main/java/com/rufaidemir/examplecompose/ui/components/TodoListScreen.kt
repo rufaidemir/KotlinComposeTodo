@@ -4,11 +4,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.rufaidemir.examplecompose.viewmodel.TodoItemViewModel
@@ -32,7 +30,7 @@ fun TodoList(viewModel: TodoItemViewModel) {
     ) {
         items(todoListState.value.size) { todoItemIndex ->
             val item = todoListState.value[todoItemIndex]
-            TodoItem(item = item)
+            TodoItemView(item = item)
         }
     }
 }

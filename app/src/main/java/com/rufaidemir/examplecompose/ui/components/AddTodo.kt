@@ -67,11 +67,13 @@ import com.rufaidemir.examplecompose.R
 import com.rufaidemir.examplecompose.model.TodoItem
 import com.rufaidemir.examplecompose.ui.theme.ExamplecomposeTheme
 import com.rufaidemir.examplecompose.util.colorToHex
+import com.rufaidemir.examplecompose.util.epochMillisString
 import com.rufaidemir.examplecompose.util.hexToComposeColor
 import com.rufaidemir.examplecompose.util.stringToLocalDateTime
 import com.rufaidemir.examplecompose.viewmodel.TodoItemViewModel
 import java.time.LocalDate
 import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 
 @Preview
@@ -118,10 +120,11 @@ fun AddTodoItemScreen(todoViewModel:TodoItemViewModel) {
 
     val (hasTime, setHasTime) = remember { mutableStateOf(false) }
     val calendarState = rememberUseCaseState()
-    val selectedDate = remember { mutableStateOf<LocalDate?>(LocalDate.now().minusDays(3)) }
+    val selectedDate = remember { mutableStateOf<LocalDate?>(LocalDate.now()) }
 
     val clockState = rememberUseCaseState()
-    val (selectedClockText, setSelectedClockText) = remember { mutableStateOf("00:00")    }
+//    val formatter = DateTimeFormatter.ofPattern("HH:mm")
+    val (selectedClockText, setSelectedClockText) = remember { mutableStateOf(epochMillisString(startDate,"HH:mm"))    }
 
     val taskTypeState = rememberUseCaseState()
     val options = listOf(
@@ -171,8 +174,7 @@ fun AddTodoItemScreen(todoViewModel:TodoItemViewModel) {
             onNegativeClick = { calendarState.hide() }
         ) { newDate ->
             selectedDate.value = newDate
-            setStartDate(stringToLocalDateTime("${selectedDate.value.toString()} $selectedClockText").toEpochSecond(
-                ZoneOffset.UTC))
+            setStartDate(stringToLocalDateTime("${selectedDate.value.toString()} $selectedClockText").toInstant(ZoneOffset.UTC).toEpochMilli())
         },
     )
 
@@ -183,8 +185,7 @@ fun AddTodoItemScreen(todoViewModel:TodoItemViewModel) {
             val formattedMinute = String.format("%02d", minutes)
             println("Selected Hour : $formattedHour : $formattedMinute")
             setSelectedClockText( "$formattedHour:$formattedMinute")
-            setStartDate(stringToLocalDateTime("${selectedDate.value.toString()} $selectedClockText").toEpochSecond(
-                ZoneOffset.UTC))
+            setStartDate(stringToLocalDateTime("${selectedDate.value.toString()} $selectedClockText").toInstant(ZoneOffset.UTC).toEpochMilli())
         },
         config = ClockConfig(is24HourFormat = true)
     )
@@ -545,6 +546,7 @@ fun AddTodoItemScreen(todoViewModel:TodoItemViewModel) {
                     hasTag = hasTag,
                     tag = tagName
                 )
+                println("============${todoItem}")
 
                 if (todoTitle.isNotBlank()){
                     todoViewModel.addItem(todoItem)

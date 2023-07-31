@@ -1,5 +1,6 @@
 package com.rufaidemir.examplecompose.util
 
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -13,6 +14,12 @@ fun stringToLocalDateTime(text:String="2022-01-06 20:30:45", patternText:String=
 fun stringToMiliSeconds(text:String="2022-01-06 20:30:45", patternText:String="yyyy-MM-dd HH:mm"): Long {
     val pattern = DateTimeFormatter.ofPattern(patternText)
     return LocalDateTime.parse(text, pattern).toEpochSecond(ZoneOffset.UTC)
+}
+
+fun epochMillisString(epochMillis: Long, patternText: String): String {
+    val localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(epochMillis), ZoneOffset.UTC)
+    val formatter = DateTimeFormatter.ofPattern(patternText)
+    return localDateTime.format(formatter)
 }
 
 
