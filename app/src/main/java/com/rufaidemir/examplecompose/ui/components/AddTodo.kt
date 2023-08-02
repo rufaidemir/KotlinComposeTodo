@@ -89,7 +89,6 @@ fun AddTodoPreview(){
 fun AddTodoItemScreen(todoViewModel:TodoItemViewModel) {
     // Ekleme için giriş bilgilerini tutacak mutable state'leri oluşturuyoruz
     val (isRepeat, setIsRepeat) = remember { mutableStateOf(false) }
-    val (isCancelled, setIsCancelled) = remember { mutableStateOf(false) }
     val (startDate, setStartDate) = remember { mutableStateOf(System.currentTimeMillis()) }
     val (todoTitle, setTodoTitle) = remember { mutableStateOf("") }
     var ic =MaterialTheme.colorScheme.primary

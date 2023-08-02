@@ -11,36 +11,34 @@ import kotlinx.coroutines.launch
 
 class TodoItemViewModel(application: Application):BaseViewModel(application) {
 
-    private val _mutTodoItems = MutableStateFlow<List<TodoItem>>(emptyList())
-    private val _mutCurrentItem = MutableStateFlow<TodoItem?>(null)
-
-    var mutTodoItems = _mutTodoItems
-    val mutCurrentItem: StateFlow<TodoItem?> = _mutCurrentItem
+    var mutTodoItems = MutableStateFlow<List<TodoItem>>(emptyList())
+    var mutCurrentItem: MutableLiveData<TodoItem?> = MutableLiveData<TodoItem?>(null)
 
     fun getAllItems() {
         launch {
             val dao = TodoDatabase(getApplication()).todoDao()
-            _mutTodoItems.value = dao.getAllItems()
+            mutTodoItems.value = dao.getAllItems()
         }
     }
     fun getItem(id:Int){
         launch {
             val dao = TodoDatabase(getApplication()).todoDao()
-            _mutCurrentItem.value=dao.getItem(id)
+            mutCurrentItem.value=dao.getItem(id)
         }
     }
 
-    fun editItem(id:Int){
+    fun editItem(newItem:TodoItem){
         launch {
             val dao = TodoDatabase(getApplication()).todoDao()
-            dao.updateItem(dao.getItem(id))
+            dao.updateItem(newItem)
+            mutCurrentItem.value = newItem
         }
     }
 
-    fun deleteItem(id:Int){
+    fun deleteItem(item: TodoItem){
         launch {
             val dao = TodoDatabase(getApplication()).todoDao()
-            dao.deleteItem(dao.getItem(id))
+            dao.deleteItem(item)
         }
     }
     fun addItem(item:TodoItem){

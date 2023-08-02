@@ -72,7 +72,6 @@ import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.rufaidemir.examplecompose.ui.components.AddTodoItemScreen
-import com.rufaidemir.examplecompose.ui.components.TodoItemPreview
 import com.rufaidemir.examplecompose.ui.components.TodoList
 import com.rufaidemir.examplecompose.ui.theme.shape
 import com.rufaidemir.examplecompose.viewmodel.TodoItemViewModel
@@ -93,8 +92,8 @@ class MainActivity : ComponentActivity() {
                     Column(modifier = Modifier.fillMaxSize()) {
 
                         AddTodoItemScreen(todoItemViewModel)
-//                        TodoList(todoItemViewModel )
-                        TodoItemPreview()
+                        TodoList(todoItemViewModel )
+//                        TodoItemPreview(todoItemViewModel)
                     }
 
                 }
