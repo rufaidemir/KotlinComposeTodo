@@ -71,6 +71,7 @@ import androidx.compose.ui.unit.TextUnit
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import com.rufaidemir.examplecompose.ui.NavigationView
 import com.rufaidemir.examplecompose.ui.components.AddTodoItemScreen
 import com.rufaidemir.examplecompose.ui.components.TodoList
 import com.rufaidemir.examplecompose.ui.theme.shape
@@ -92,7 +93,7 @@ class MainActivity : ComponentActivity() {
                     Column(modifier = Modifier.fillMaxSize()) {
 
                         AddTodoItemScreen(todoItemViewModel)
-                        TodoList(todoItemViewModel )
+                        NavigationView(itemViewModel = todoItemViewModel)
 //                        TodoItemPreview(todoItemViewModel)
                     }
 

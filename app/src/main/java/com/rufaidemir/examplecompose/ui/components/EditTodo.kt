@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.graphics.toColor
+import androidx.navigation.NavController
 import com.maxkeppeker.sheets.core.models.base.IconSource
 import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
@@ -79,7 +80,7 @@ import java.time.format.DateTimeFormatter
 
 @Preview
 @Composable
-fun AddTodoPreview(){
+fun EditTodoPreview(){
     ExamplecomposeTheme {
         val todoViewModel = TodoItemViewModel(Application())
         AddTodoItemScreen(todoViewModel)
@@ -87,8 +88,8 @@ fun AddTodoPreview(){
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddTodoItemScreen(todoViewModel:TodoItemViewModel) {
-    // Ekleme için giriş bilgilerini tutacak mutable state'leri oluşturuyoruz
+fun EditTodoItemScreen(navController: NavController,todoViewModel:TodoItemViewModel) {
+    val currentItem = todoViewModel.mutCurrentItem
     val (isRepeat, setIsRepeat) = remember { mutableStateOf(false) }
     val (startDate, setStartDate) = remember { mutableStateOf(System.currentTimeMillis()) }
     val (todoTitle, setTodoTitle) = remember { mutableStateOf("") }

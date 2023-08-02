@@ -16,20 +16,22 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.rufaidemir.examplecompose.viewmodel.TodoItemViewModel
 import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TodoList(viewModel: TodoItemViewModel) {
+fun TodoList(navController: NavController,viewModel: TodoItemViewModel) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    val todoListState = viewModel.mutTodoItems.collectAsState(emptyList())
+    val todoListState by viewModel.mutTodoItems.collectAsState(emptyList())
 
 
     LaunchedEffect(Unit) {
@@ -51,13 +53,15 @@ fun TodoList(viewModel: TodoItemViewModel) {
                 .fillMaxSize()
                 .padding(top = contentPadding.calculateTopPadding()),
             contentPadding = PaddingValues(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+//            verticalArrangement = Arrangement.spacedBy(8.dp)
 
         ) {
-            items(todoListState.value.size) { todoItemIndex ->
-                val item = todoListState.value[todoItemIndex]
+            items(todoListState.size) { todoItemIndex ->
+                val item = todoListState[todoItemIndex]
 
-                TodoItemView(item = item,
+                TodoItemView(
+                    navController=navController,
+                    item = item,
                     modifyItem = {
                         viewModel.editItem(it)
                     },
@@ -65,19 +69,23 @@ fun TodoList(viewModel: TodoItemViewModel) {
                         scope.launch {
                             val result = snackbarHostState.showSnackbar(
                                 "Not silindi!",
-                                duration = SnackbarDuration.Long,
+                                duration = SnackbarDuration.Short,
                                 actionLabel = "Geri Al"
                             )
                             when (result) {
                                 SnackbarResult.ActionPerformed -> {
                                     viewModel.mutTodoItems
+                                    viewModel.getAllItems()
                                 }
                                 SnackbarResult.Dismissed -> {
                                     viewModel.deleteItem(item)
                                 }
                             }
                         }
-                    })
+                    },
+                setOnCurrentItem = {
+                    viewModel.getItem(item.uuid)
+                })
             }
 
         }

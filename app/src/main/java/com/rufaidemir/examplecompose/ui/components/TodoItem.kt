@@ -27,6 +27,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.DismissDirection
 import androidx.compose.material3.DismissState
 import androidx.compose.material3.DismissValue
@@ -49,6 +51,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.maxkeppeker.sheets.core.models.base.IconSource
 import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
 import com.maxkeppeler.sheets.color.ColorDialog
@@ -62,22 +66,28 @@ import com.maxkeppeler.sheets.option.models.OptionConfig
 import com.maxkeppeler.sheets.option.models.OptionSelection
 import com.rufaidemir.examplecompose.R
 import com.rufaidemir.examplecompose.model.TodoItem
+import com.rufaidemir.examplecompose.ui.theme.templateColors
 import com.rufaidemir.examplecompose.util.hexToComposeColor
 import java.text.DateFormat
 
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TodoItemView( item : TodoItem, modifyItem:(item:TodoItem)->Unit, onDeleteItem:(item:TodoItem)->Unit) {
+fun TodoItemView(
+    navController:NavController,
+    item: TodoItem,
+    modifyItem: (item: TodoItem) -> Unit,
+    onDeleteItem: (item: TodoItem) -> Unit,
+    setOnCurrentItem:(item:TodoItem)->Unit
+) {
 
-    val (currentTag, setCurrentTag) = remember {mutableStateOf(item.tag)   }
+    val (currentTag, setCurrentTag) = remember { mutableStateOf(item.tag) }
     val primaryColor = MaterialTheme.colorScheme.primary
-    var itemColor =if (item.hasColor && item.color!=null) Color(item.color!!) else primaryColor
+    var itemColor = if (item.hasColor && item.color != null) Color(item.color!!) else primaryColor
     val (selectedColor, setSelectedColor) = remember { mutableStateOf(itemColor) }
 
-    if(item.hasColor){
-        item.color?.let{
+    if (item.hasColor) {
+        item.color?.let {
             itemColor = Color(item.color!!)
         }
     }
@@ -96,11 +106,14 @@ fun TodoItemView( item : TodoItem, modifyItem:(item:TodoItem)->Unit, onDeleteIte
             titleText = "Devam",
         ),
         Option(
-            IconSource(R.drawable.baseline_cancel_24,tint = Color.Red),
+            IconSource(R.drawable.baseline_cancel_24, tint = Color.Red),
             titleText = "Başarısız",
         ),
         Option(
-            IconSource(R.drawable.baseline_error_outline_24, tint = MaterialTheme.colorScheme.tertiary),
+            IconSource(
+                R.drawable.baseline_error_outline_24,
+                tint = MaterialTheme.colorScheme.tertiary
+            ),
             titleText = "İptal",
         ),
     )
@@ -112,41 +125,23 @@ fun TodoItemView( item : TodoItem, modifyItem:(item:TodoItem)->Unit, onDeleteIte
             item.hasTag = true
             setCurrentTag(option.titleText)
             modifyItem(item)
-         },
+        },
         config = OptionConfig(mode = DisplayMode.GRID_VERTICAL),
     )
 
     val colorState = rememberUseCaseState()
-    val templateColors = MultipleColors.ColorsInt(
-        Color.Red.copy(alpha = 0.1f).toArgb(),
-        Color.Red.copy(alpha = 0.3f).toArgb(),
-        Color.Red.copy(alpha = 0.5f).toArgb(),
-        Color.Red.toArgb(),
-        Color.Green.copy(alpha = 0.1f).toArgb(),
-        Color.Green.copy(alpha = 0.3f).toArgb(),
-        Color.Green.copy(alpha = 0.5f).toArgb(),
-        Color.Green.toArgb(),
-        Color.Yellow.toArgb(),
-        Color.Cyan.toArgb(),
-        Color.LightGray.toArgb(),
-        Color.Gray.toArgb(),
-        Color.DarkGray.toArgb(),
-        Color.Magenta.toArgb(),
-    )
-
-
     ColorDialog(
         state = colorState, selection = ColorSelection(
             onSelectNone = {
-                item.hasColor=false
-                item.color=null
+                item.hasColor = false
+                item.color = null
                 setSelectedColor(primaryColor)
                 modifyItem(item)
             },
             onSelectColor = {
                 setSelectedColor(Color(it))
-                item.hasColor=true
-                item.color=it
+                item.hasColor = true
+                item.color = it
                 modifyItem(item)
             },
         ),
@@ -168,125 +163,132 @@ fun TodoItemView( item : TodoItem, modifyItem:(item:TodoItem)->Unit, onDeleteIte
 
 
     AnimatedVisibility(
-        show.value,exit = fadeOut(spring())
-    ){
+        show.value, exit = fadeOut(spring())
+    ) {
 
-        SwipeToDismiss(state = dismissState, background = { DismissBackground(dismissState) }, dismissContent = {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .animateContentSize(
-                        animationSpec = tween(
-                            durationMillis = 300, easing = LinearOutSlowInEasing
-                        )
-                    )
-            ) {
-                Row(
+        SwipeToDismiss(
+            state = dismissState,
+            background = { DismissBackground(dismissState) },
+            dismissContent = {
+                Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .border(width = 1.dp, color = selectedColor, shape = RoundedCornerShape(8.dp))
-                        .height(rowHeight), horizontalArrangement = Arrangement.SpaceBetween
+                        .padding(bottom = 8.dp)
+                        .clickable {
+                            setOnCurrentItem(item)
+                            navController.navigate("edit")
+                        },
+                    elevation = CardDefaults.cardElevation(defaultElevation = 20.dp)
                 ) {
-                    Column(
+                    Row(
                         modifier = Modifier
-                            .weight(1f)
-                            .background(MaterialTheme.colorScheme.background)
-                            .height(rowHeight),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
+                            .fillMaxWidth()
+                            .height(rowHeight)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(itemColor, shape = RoundedCornerShape(8.dp)),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Icon(
-                            painterResource(id = getLeftIconId(currentTag.toString())),
-                            tint = getLeftIconColor(currentTag.toString()),
-                            contentDescription = "",
-                            modifier = Modifier.clickable {
-                                taskTypeState.show()
-                            }
-                        )
-
-                    }
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .width(1.dp)
-                            .background(selectedColor)
-                    )
-                    Column(
-                        modifier = Modifier
-                            .weight(5f)
-                            .fillMaxHeight()
-                            .background(MaterialTheme.colorScheme.background)
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(5.dp),
-                    ) {
-                        Row(modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(15.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .background(MaterialTheme.colorScheme.background)
+                                .height(rowHeight),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(
-                                text = DateFormat.getInstance().format(item.time),
-                                fontSize = MaterialTheme.typography.labelSmall.fontSize
+                            Icon(
+                                painterResource(id = getLeftIconId(currentTag.toString())),
+                                tint = getLeftIconColor(currentTag.toString()),
+                                contentDescription = "",
+                                modifier = Modifier.clickable {
+                                    taskTypeState.show()
+                                }
                             )
-                            if (item.hasInterval && item.interval!=null){
-                                Text(
-                                    text ="${item.intervalText}",
-                                    fontSize = MaterialTheme.typography.labelSmall.fontSize
-                                )
-                                Icon(
-                                    painter = painterResource(id = R.drawable.baseline_repeat_24),
-                                    modifier = Modifier.size(12.dp),
-                                    contentDescription ="",
-                                    tint = itemColor
-                                )
-                            }
+
                         }
-                        Text(
-                            text = item.title,
-                            fontSize = MaterialTheme.typography.labelLarge.fontSize,
-                            maxLines = 1,
-                            overflow = TextOverflow.Clip,
-                            style = TextStyle(textDecoration = if (item.hasTag && item.tag=="Iptal") TextDecoration.LineThrough else TextDecoration.None)
-                        )
-                    }
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .width(1.dp)
-                            .background(selectedColor)
-                    )
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .background(MaterialTheme.colorScheme.background),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
                         Box(
                             modifier = Modifier
-                                .height(10.dp)
-                                .width(10.dp)
-                                .clip(RoundedCornerShape(8.dp))
+                                .fillMaxHeight()
+                                .width(1.dp)
                                 .background(selectedColor)
-                                .clickable{
-                                    colorState.show()
-                                }
                         )
+                        Column(
+                            modifier = Modifier
+                                .weight(5f)
+                                .fillMaxHeight()
+                                .background(MaterialTheme.colorScheme.background)
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            verticalArrangement = Arrangement.spacedBy(5.dp),
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(15.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = DateFormat.getInstance().format(item.time),
+                                    fontSize = MaterialTheme.typography.labelSmall.fontSize
+                                )
+                                if (item.hasInterval && item.interval != null) {
+                                    Text(
+                                        text = "${item.intervalText}",
+                                        fontSize = MaterialTheme.typography.labelSmall.fontSize
+                                    )
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.baseline_repeat_24),
+                                        modifier = Modifier.size(12.dp),
+                                        contentDescription = "",
+                                        tint = itemColor
+                                    )
+                                }
+                            }
+                            Text(
+                                text = item.title,
+                                fontSize = MaterialTheme.typography.labelLarge.fontSize,
+                                maxLines = 1,
+                                overflow = TextOverflow.Clip,
+                                style = TextStyle(textDecoration = if (item.hasTag && item.tag == "Iptal") TextDecoration.LineThrough else TextDecoration.None)
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .width(1.dp)
+                                .background(selectedColor)
+                        )
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .background(MaterialTheme.colorScheme.background),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .height(10.dp)
+                                    .width(10.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(selectedColor)
+                                    .clickable {
+                                        colorState.show()
+                                    }
+                            )
+                        }
                     }
                 }
-            }
-        } )
+            })
     }
 
 
 }
 
 fun getLeftIconId(currentTag: String): Int {
-    var id=if (currentTag == "İptal") {
+    var id = if (currentTag == "İptal") {
         (R.drawable.baseline_error_outline_24)
     } else if (currentTag == "Tamam") {
         (R.drawable.baseline_task_alt_24)
-    } else if (currentTag== "Devam") {
+    } else if (currentTag == "Devam") {
         (R.drawable.baseline_access_time_24)
     } else if (currentTag == "Başarısız") {
         (R.drawable.baseline_cancel_24)
@@ -296,13 +298,14 @@ fun getLeftIconId(currentTag: String): Int {
     return id
 
 }
+
 @Composable
 fun getLeftIconColor(currentTag: String): Color {
-    var color=if (currentTag == "İptal") {
+    var color = if (currentTag == "İptal") {
         Color(33, 150, 243, 255)
     } else if (currentTag == "Tamam") {
         Color(7, 175, 69, 255)
-    } else if (currentTag== "Devam") {
+    } else if (currentTag == "Devam") {
         Color(255, 152, 0, 255)
     } else if (currentTag == "Başarısız") {
         Color(244, 67, 54, 255)

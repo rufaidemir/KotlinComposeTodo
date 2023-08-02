@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 class TodoItemViewModel(application: Application):BaseViewModel(application) {
 
     var mutTodoItems = MutableStateFlow<List<TodoItem>>(emptyList())
-    var mutCurrentItem: MutableLiveData<TodoItem?> = MutableLiveData<TodoItem?>(null)
+    var mutCurrentItem: MutableLiveData<TodoItem> = MutableLiveData<TodoItem>()
 
     fun getAllItems() {
         launch {
