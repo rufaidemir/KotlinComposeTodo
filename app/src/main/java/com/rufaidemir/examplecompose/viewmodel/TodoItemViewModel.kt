@@ -11,8 +11,9 @@ import kotlinx.coroutines.launch
 
 class TodoItemViewModel(application: Application):BaseViewModel(application) {
 
-    var mutTodoItems = MutableStateFlow<List<TodoItem>>(emptyList())
+    var mutTodoItems = MutableLiveData<List<TodoItem>>()
     var mutCurrentItem: MutableLiveData<TodoItem> = MutableLiveData<TodoItem>()
+
 
     fun getAllItems() {
         launch {
@@ -24,6 +25,7 @@ class TodoItemViewModel(application: Application):BaseViewModel(application) {
         launch {
             val dao = TodoDatabase(getApplication()).todoDao()
             mutCurrentItem.value=dao.getItem(id)
+            getAllItems()
         }
     }
 
@@ -32,6 +34,7 @@ class TodoItemViewModel(application: Application):BaseViewModel(application) {
             val dao = TodoDatabase(getApplication()).todoDao()
             dao.updateItem(newItem)
             mutCurrentItem.value = newItem
+            getAllItems()
         }
     }
 
@@ -39,12 +42,14 @@ class TodoItemViewModel(application: Application):BaseViewModel(application) {
         launch {
             val dao = TodoDatabase(getApplication()).todoDao()
             dao.deleteItem(item)
+            getAllItems()
         }
     }
     fun addItem(item:TodoItem){
         launch {
             val dao = TodoDatabase(getApplication()).todoDao()
             dao.addItem(item)
+            getAllItems()
         }
     }
 

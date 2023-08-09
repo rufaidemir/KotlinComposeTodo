@@ -15,7 +15,7 @@ interface TodoItemDAO {
 
 
     @Query("SELECT * FROM todotable ORDER BY uuid DESC")
-    suspend fun getAllItems(): List<TodoItem>
+    fun getAllItems(): List<TodoItem>
 
     @Query("SELECT * FROM todotable WHERE uuid = :id")
     suspend fun getItem(id:Int):TodoItem

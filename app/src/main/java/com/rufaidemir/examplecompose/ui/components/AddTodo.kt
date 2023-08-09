@@ -88,7 +88,6 @@ fun AddTodoPreview(){
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTodoItemScreen(todoViewModel:TodoItemViewModel) {
-    // Ekleme için giriş bilgilerini tutacak mutable state'leri oluşturuyoruz
     val (isRepeat, setIsRepeat) = remember { mutableStateOf(false) }
     val (startDate, setStartDate) = remember { mutableStateOf(System.currentTimeMillis()) }
     val (todoTitle, setTodoTitle) = remember { mutableStateOf("") }
@@ -518,7 +517,6 @@ fun AddTodoItemScreen(todoViewModel:TodoItemViewModel) {
 
         Button(
             onClick = {
-                // Verileri TodoItemData sınıfından oluşturup, onAddItem callback'ini çağırıyoruz
                 val todoItem = TodoItem(
                     title = todoTitle,
                     hasColor = hasColor,

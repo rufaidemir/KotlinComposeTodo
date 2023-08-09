@@ -68,6 +68,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
@@ -76,6 +77,7 @@ import com.rufaidemir.examplecompose.ui.components.AddTodoItemScreen
 import com.rufaidemir.examplecompose.ui.components.TodoList
 import com.rufaidemir.examplecompose.ui.theme.shape
 import com.rufaidemir.examplecompose.viewmodel.TodoItemViewModel
+import com.rufaidemir.examplecompose.viewmodel.TodoListViewModel
 
 class MainActivity : ComponentActivity() {
     private val todoItemViewModel: TodoItemViewModel by viewModels()
@@ -84,7 +86,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             ExamplecomposeTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

@@ -1,12 +1,14 @@
 package com.rufaidemir.examplecompose.ui
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.rufaidemir.examplecompose.ui.components.EditTodoItemScreen
 import com.rufaidemir.examplecompose.ui.components.TodoList
 import com.rufaidemir.examplecompose.viewmodel.TodoItemViewModel
+import com.rufaidemir.examplecompose.viewmodel.TodoListViewModel
 
 
 @Composable
@@ -15,7 +17,8 @@ fun NavigationView(itemViewModel:TodoItemViewModel){
 
     NavHost(navController = navController, startDestination = "home" ){
         composable("home"){
-            TodoList(navController,viewModel = itemViewModel)
+
+            TodoList(navController, onEvent = {})
         }
         composable("edit"){
             EditTodoItemScreen(navController, todoViewModel = itemViewModel)

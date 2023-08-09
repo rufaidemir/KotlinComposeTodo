@@ -17,15 +17,23 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -89,10 +97,19 @@ fun EditTodoPreview(){
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditTodoItemScreen(navController: NavController,todoViewModel:TodoItemViewModel) {
-    val currentItem = todoViewModel.mutCurrentItem
-    val (isRepeat, setIsRepeat) = remember { mutableStateOf(false) }
-    val (startDate, setStartDate) = remember { mutableStateOf(System.currentTimeMillis()) }
-    val (todoTitle, setTodoTitle) = remember { mutableStateOf("") }
+    val currentItemFromViewModel = todoViewModel.mutCurrentItem.value
+    val (currentItem, setCurrentItem) = remember {
+        mutableStateOf(
+            currentItemFromViewModel
+                ?: TodoItem("", false, null, false, time = System.currentTimeMillis(), false, null, null, false, null)
+        )
+    }
+    if (currentItemFromViewModel!=null){
+        setCurrentItem(currentItemFromViewModel)
+    }
+    val (isRepeat, setIsRepeat) = remember { mutableStateOf(currentItem.hasInterval) }
+    val (startDate, setStartDate) = remember { mutableStateOf(currentItem.time) }
+    val (todoTitle, setTodoTitle) = remember { mutableStateOf(currentItem.title) }
     var ic =MaterialTheme.colorScheme.primary
     val (selectedColor, setSelectedColor) = remember { mutableStateOf(ic) }
     val (repeatInterval, setRepeatInterval) = remember { mutableStateOf<Long?>(null) }
@@ -109,7 +126,6 @@ fun EditTodoItemScreen(navController: NavController,todoViewModel:TodoItemViewMo
     val selectedDate = remember { mutableStateOf<LocalDate?>(LocalDate.now()) }
 
     val clockState = rememberUseCaseState()
-//    val formatter = DateTimeFormatter.ofPattern("HH:mm")
     val (selectedClockText, setSelectedClockText) = remember { mutableStateOf(epochMillisString(startDate,"HH:mm"))    }
 
     val taskTypeState = rememberUseCaseState()
@@ -187,371 +203,382 @@ fun EditTodoItemScreen(navController: NavController,todoViewModel:TodoItemViewMo
     )
 
 
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Düzenle") },
+                navigationIcon = {
+                    IconButton(onClick = {navController.popBackStack()}) {
+                        Icon(Icons.Filled.ArrowBack, "backIcon")
+                    }
+                },
 
-    // Ekran tasarımını oluşturuyoruz
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-//            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        OutlinedTextField(
-            value = todoTitle,
-            onValueChange = { setTodoTitle(it) },
-            label = { Text("Todo Title") },
+
+            )
+        }){contentPadding ->
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp)
-        )
+                .padding(16.dp)
+                .padding(top = contentPadding.calculateTopPadding()),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedTextField(
+                value = todoTitle,
+                onValueChange = { setTodoTitle(it) },
+                label = { Text("Todo Title") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            )
 
 //        --------------------------------ADD REOMVE ICONS----------------------------------------------
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp), horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            if(!hasColor){
-                Icon(painter = painterResource(id = R.drawable.color),
-                    contentDescription = "AddColor",
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clickable {
-                            sethasColor(true)
-                        },
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-            if(!hasTime){
-                Icon(painter = painterResource(id = R.drawable.baseline_notification_add_24),
-                    contentDescription = "Add Time",
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clickable {
-                            setHasTime(true)
-                        },
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-            if(!isRepeat){
-                Icon(painter = painterResource(id = R.drawable.baseline_repeat_24),
-                    contentDescription = "Add Repeat",
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clickable {
-                            setIsRepeat(true)
-                        },
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-            if (!hasTag){
-                Icon(painter = painterResource(id = R.drawable.baseline_bookmark_add_24),
-                    contentDescription = "Add Repeat",
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clickable {
-                            setHasTag(true)
-                        },
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-        if(hasColor){
-            Row(
-                modifier= Modifier
-                    .fillMaxWidth()
-                    .border(
-                        0.dp,
-                        shape = MaterialTheme.shapes.medium,
-                        color = Color.White
-                    )
-                    .clip(shape = MaterialTheme.shapes.medium)
-                    .clickable {
-                        setShowColorPicker(!showColorPicker)
-                        colorState.show()
-                    }
-                    .padding(start = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-//            horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-
-                Icon(
-                    painter = painterResource(id = R.drawable.round_square_24),
-                    contentDescription = "Color",
-                    modifier = Modifier.size(24.dp),
-                    tint = selectedColor
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = colorToHex(selectedColor),
-                    color = selectedColor,
-                    modifier = Modifier
-                        .padding(vertical = 16.dp)
-                        .weight(1f),
-                )
-
-                Icon(painter = painterResource(id = R.drawable.baseline_cancel_24),
-                    contentDescription = "Cancel",
-                    modifier = Modifier
-                        .size(20.dp)
-                        .clickable {
-                            sethasColor(false)
-                        },
-                    tint = Color.Red
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-            }
-        }
-
-        // Tarih Seçiciyi ekliyoruz
-        if(hasTime){
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(
-                        0.dp,
-                        shape = MaterialTheme.shapes.medium,
-                        color = Color.White
-                    )
-                    .padding(start = 16.dp)
-                    .clip(shape = MaterialTheme.shapes.medium),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(modifier = Modifier
-                    .weight(1f)
-                    .clickable { calendarState.show() }
-                    .clip(shape = MaterialTheme.shapes.medium),
-                    verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_date_range_24),
-                        contentDescription = "",
-                        tint = MaterialTheme.colorScheme.primary,
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp), horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                if(!hasColor){
+                    Icon(painter = painterResource(id = R.drawable.color),
+                        contentDescription = "AddColor",
                         modifier = Modifier
                             .size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = selectedDate.value.toString(),
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(vertical = 16.dp),
+                            .clickable {
+                                sethasColor(true)
+                            },
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
-                //            ---------------------------------ADD CLOCK ORNONE--------------
-                Row(modifier = Modifier
-                    .weight(1f)
-                    .clickable { clockState.show() }
-                    .clip(shape = MaterialTheme.shapes.medium),
-                    verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_access_time_24),
-                        contentDescription = "",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = selectedClockText,
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(vertical = 16.dp),
-                    )
-                }
-                Icon(painter = painterResource(id = R.drawable.baseline_cancel_24),
-                    contentDescription = "Cancel",
-                    modifier = Modifier
-                        .size(20.dp)
-                        .clickable {
-                            setHasTime(false)
-                        },
-                    tint = Color.Red
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-
-            }
-        }
-
-        if(isRepeat){
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(
-                        0.dp,
-                        shape = MaterialTheme.shapes.medium,
-                        color = Color.White
-                    )
-                    .padding(start = 16.dp)
-                    .clip(shape = MaterialTheme.shapes.medium)
-            ) {
-                Row(modifier = Modifier
-                    .weight(1f)
-                    .clickable { }
-                    .clip(shape = MaterialTheme.shapes.medium),
-                    verticalAlignment = Alignment.CenterVertically){
-
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_repeat_24),
-                        contentDescription = "",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Tekrar")
-                }
-                Row(modifier = Modifier
-                    .weight(3f)
-                    .clickable { calendarState.show() }
-                    .clip(shape = MaterialTheme.shapes.medium),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween){
-                    val (selectedItemInterval, setSelectedItemInterval) = remember {mutableStateOf(1)}
-
-                    TextField(
-                        value = selectedItemInterval.toString(),
-                        onValueChange = {
-                            val interval = it.toIntOrNull()
-                            if(interval!=null){
-                                setSelectedItemInterval(interval)
-                            }else{
-                                setSelectedItemInterval(1)
-                            }
-                        },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                if(!hasTime){
+                    Icon(painter = painterResource(id = R.drawable.baseline_notification_add_24),
+                        contentDescription = "Add Time",
                         modifier = Modifier
-                            .weight(1f)
-                            .background(Color.Transparent),
-                        textStyle = TextStyle(textAlign = TextAlign.Center, fontSize = 16.sp)
+                            .size(24.dp)
+                            .clickable {
+                                setHasTime(true)
+                            },
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                if(!isRepeat){
+                    Icon(painter = painterResource(id = R.drawable.baseline_repeat_24),
+                        contentDescription = "Add Repeat",
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable {
+                                setIsRepeat(true)
+                            },
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                if (!hasTag){
+                    Icon(painter = painterResource(id = R.drawable.baseline_bookmark_add_24),
+                        contentDescription = "Add Repeat",
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable {
+                                setHasTag(true)
+                            },
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            if(hasColor){
+                Row(
+                    modifier= Modifier
+                        .fillMaxWidth()
+                        .border(
+                            0.dp,
+                            shape = MaterialTheme.shapes.medium,
+                            color = Color.White
+                        )
+                        .clip(shape = MaterialTheme.shapes.medium)
+                        .clickable {
+                            setShowColorPicker(!showColorPicker)
+                            colorState.show()
+                        }
+                        .padding(start = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+//            horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+
+                    Icon(
+                        painter = painterResource(id = R.drawable.round_square_24),
+                        contentDescription = "Color",
+                        modifier = Modifier.size(24.dp),
+                        tint = selectedColor
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = colorToHex(selectedColor),
+                        color = selectedColor,
+                        modifier = Modifier
+                            .padding(vertical = 16.dp)
+                            .weight(1f),
                     )
 
-                    val (isExpanded, setIsExpanded) = remember {
-                        mutableStateOf(false)
-                    }
-                    val dropdownItems = listOf("Dakika" , "Saat", "Gun", "Hafta","Ay", "Yil")
-                    val (selectedItemText, setSelectedItemText) = remember {mutableStateOf("Gun")}
+                    Icon(painter = painterResource(id = R.drawable.baseline_cancel_24),
+                        contentDescription = "Cancel",
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clickable {
+                                sethasColor(false)
+                            },
+                        tint = Color.Red
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+            }
 
-
-                    Box(modifier = Modifier
+            // Tarih Seçiciyi ekliyoruz
+            if(hasTime){
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(
+                            0.dp,
+                            shape = MaterialTheme.shapes.medium,
+                            color = Color.White
+                        )
+                        .padding(start = 16.dp)
+                        .clip(shape = MaterialTheme.shapes.medium),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(modifier = Modifier
                         .weight(1f)
-                        .wrapContentSize(Alignment.TopStart)) {
-                        Text(selectedItemText, textAlign = TextAlign.Center,modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(onClick = { setIsExpanded(true) })
-                            .padding(vertical = 16.dp, horizontal = 16.dp),
-                            fontSize = 16.sp)
-                        DropdownMenu(
-                            expanded = isExpanded,
-                            onDismissRequest = { setIsExpanded(false) },
+                        .clickable { calendarState.show() }
+                        .clip(shape = MaterialTheme.shapes.medium),
+                        verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_date_range_24),
+                            contentDescription = "",
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            dropdownItems.forEach{  s ->
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(text = s, fontSize = 16.sp)
-                                    },
-                                    onClick = {
-                                        setSelectedItemText(s)
-                                        setIsExpanded(false)
-                                    })
-                            }
-                        }
+                                .size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = selectedDate.value.toString(),
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(vertical = 16.dp),
+                        )
+                    }
+                    //            ---------------------------------ADD CLOCK ORNONE--------------
+                    Row(modifier = Modifier
+                        .weight(1f)
+                        .clickable { clockState.show() }
+                        .clip(shape = MaterialTheme.shapes.medium),
+                        verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_access_time_24),
+                            contentDescription = "",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = selectedClockText,
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(vertical = 16.dp),
+                        )
                     }
                     Icon(painter = painterResource(id = R.drawable.baseline_cancel_24),
                         contentDescription = "Cancel",
                         modifier = Modifier
                             .size(20.dp)
                             .clickable {
-                                setIsRepeat(false)
+                                setHasTime(false)
+                            },
+                        tint = Color.Red
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                }
+            }
+
+            if(isRepeat){
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(
+                            0.dp,
+                            shape = MaterialTheme.shapes.medium,
+                            color = Color.White
+                        )
+                        .padding(start = 16.dp)
+                        .clip(shape = MaterialTheme.shapes.medium)
+                ) {
+                    Row(modifier = Modifier
+                        .weight(1f)
+                        .clickable { }
+                        .clip(shape = MaterialTheme.shapes.medium),
+                        verticalAlignment = Alignment.CenterVertically){
+
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_repeat_24),
+                            contentDescription = "",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = "Tekrar")
+                    }
+                    Row(modifier = Modifier
+                        .weight(3f)
+                        .clickable { calendarState.show() }
+                        .clip(shape = MaterialTheme.shapes.medium),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween){
+                        val (selectedItemInterval, setSelectedItemInterval) = remember {mutableStateOf(1)}
+
+                        TextField(
+                            value = selectedItemInterval.toString(),
+                            onValueChange = {
+                                val interval = it.toIntOrNull()
+                                if(interval!=null){
+                                    setSelectedItemInterval(interval)
+                                }else{
+                                    setSelectedItemInterval(1)
+                                }
+                            },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier
+                                .weight(1f)
+                                .background(Color.Transparent),
+                            textStyle = TextStyle(textAlign = TextAlign.Center, fontSize = 16.sp)
+                        )
+
+                        val (isExpanded, setIsExpanded) = remember {
+                            mutableStateOf(false)
+                        }
+                        val dropdownItems = listOf("Dakika" , "Saat", "Gun", "Hafta","Ay", "Yil")
+                        val (selectedItemText, setSelectedItemText) = remember {mutableStateOf("Gun")}
+
+
+                        Box(modifier = Modifier
+                            .weight(1f)
+                            .wrapContentSize(Alignment.TopStart)) {
+                            Text(selectedItemText, textAlign = TextAlign.Center,modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(onClick = { setIsExpanded(true) })
+                                .padding(vertical = 16.dp, horizontal = 16.dp),
+                                fontSize = 16.sp)
+                            DropdownMenu(
+                                expanded = isExpanded,
+                                onDismissRequest = { setIsExpanded(false) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            ) {
+                                dropdownItems.forEach{  s ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(text = s, fontSize = 16.sp)
+                                        },
+                                        onClick = {
+                                            setSelectedItemText(s)
+                                            setIsExpanded(false)
+                                        })
+                                }
+                            }
+                        }
+                        Icon(painter = painterResource(id = R.drawable.baseline_cancel_24),
+                            contentDescription = "Cancel",
+                            modifier = Modifier
+                                .size(20.dp)
+                                .clickable {
+                                    setIsRepeat(false)
+                                },
+                            tint = Color.Red
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+
+                }
+            }
+
+            if (hasTag){
+                Row(
+                    modifier= Modifier
+                        .fillMaxWidth()
+                        .border(
+                            0.dp,
+                            shape = MaterialTheme.shapes.medium,
+                            color = Color.White
+                        )
+                        .clip(shape = MaterialTheme.shapes.medium)
+                        .clickable {
+                            taskTypeState.show()
+                        }
+                        .padding(start = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+//            horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+
+                    tagIcon.tint?.let {
+                        Icon(
+                            painter= painterResource(id = tagIcon.drawableRes!!),
+                            contentDescription = "Etiket",
+                            modifier = Modifier.size(24.dp),
+                            tint = it
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = tagName,
+                            color = selectedColor,
+                            modifier = Modifier
+                                .padding(vertical = 16.dp)
+                                .weight(1f),
+                        )
+                    }
+
+                    Icon(painter = painterResource(id = R.drawable.baseline_cancel_24),
+                        contentDescription = "Cancel",
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clickable {
+                                setHasTag(false)
                             },
                         tint = Color.Red
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                 }
-
             }
-        }
 
-        if (hasTag){
-            Row(
-                modifier= Modifier
-                    .fillMaxWidth()
-                    .border(
-                        0.dp,
-                        shape = MaterialTheme.shapes.medium,
-                        color = Color.White
+            val context = LocalContext.current
+
+            Button(
+                onClick = {
+                    // Verileri TodoItemData sınıfından oluşturup, onAddItem callback'ini çağırıyoruz
+                    val todoItem = TodoItem(
+                        title = todoTitle,
+                        hasColor = hasColor,
+                        color = selectedColor.toArgb(),
+                        hasTime= hasTime,
+                        time = startDate,
+                        hasInterval = isRepeat,
+                        interval = repeatInterval,
+                        intervalText = "$repeatInterval $repeatIntervalText",
+                        hasTag = hasTag,
+                        tag = tagName
                     )
-                    .clip(shape = MaterialTheme.shapes.medium)
-                    .clickable {
-                        taskTypeState.show()
-                    }
-                    .padding(start = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-//            horizontalArrangement = Arrangement.SpaceBetween
-            ) {
+                    println("============${todoItem}")
 
-                tagIcon.tint?.let {
-                    Icon(
-                        painter= painterResource(id = tagIcon.drawableRes!!),
-                        contentDescription = "Etiket",
-                        modifier = Modifier.size(24.dp),
-                        tint = it
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = tagName,
-                        color = selectedColor,
-                        modifier = Modifier
-                            .padding(vertical = 16.dp)
-                            .weight(1f),
-                    )
-                }
-
-                Icon(painter = painterResource(id = R.drawable.baseline_cancel_24),
-                    contentDescription = "Cancel",
-                    modifier = Modifier
-                        .size(20.dp)
-                        .clickable {
-                            setHasTag(false)
-                        },
-                    tint = Color.Red
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-            }
-        }
-
-        val context = LocalContext.current
-
-        Button(
-            onClick = {
-                // Verileri TodoItemData sınıfından oluşturup, onAddItem callback'ini çağırıyoruz
-                val todoItem = TodoItem(
-                    title = todoTitle,
-                    hasColor = hasColor,
-                    color = selectedColor.toArgb(),
-                    hasTime= hasTime,
-                    time = startDate,
-                    hasInterval = isRepeat,
-                    interval = repeatInterval,
-                    intervalText = "$repeatInterval $repeatIntervalText",
-                    hasTag = hasTag,
-                    tag = tagName
-                )
-                println("============${todoItem}")
-
-                if (todoTitle.isNotBlank()){
-                    todoViewModel.addItem(todoItem)
-                    setTodoTitle("")
-                    setHasTag(false)
-                    setHasTime(false)
-                    sethasColor(false)
-                    setIsRepeat(false)
+                    if (todoTitle.isNotBlank()){
+                        todoViewModel.addItem(todoItem)
+                        setTodoTitle("")
+                        setHasTag(false)
+                        setHasTime(false)
+                        sethasColor(false)
+                        setIsRepeat(false)
 //                    TODO navigate or hide modal
-                    Toast.makeText(context, "Not eklendi", Toast.LENGTH_SHORT).show()
-                    todoViewModel.getAllItems()
-                }else{
-                    Toast.makeText(context, "Lütfen başlık bilgisini giriniz!", Toast.LENGTH_SHORT).show()
-                }
-            },
-            modifier = Modifier.fillMaxWidth(),
-//            colors = ButtonDefaults.buttonColors(Color.Green)
-        ) {
-            Text(text = "Add Todo")
+                        Toast.makeText(context, "Not eklendi", Toast.LENGTH_SHORT).show()
+                        todoViewModel.getAllItems()
+                    }else{
+                        Toast.makeText(context, "Lütfen başlık bilgisini giriniz!", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(Color(245,124,0))        ) {
+                Text(text = "Düzenle")
+            }
         }
     }
 }

@@ -1,13 +1,5 @@
 package com.rufaidemir.examplecompose.ui.components
 
-import android.widget.Toast
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,29 +7,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
-import androidx.compose.material3.DismissDirection
-import androidx.compose.material3.DismissState
-import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,20 +27,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.maxkeppeker.sheets.core.models.base.IconSource
 import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
 import com.maxkeppeler.sheets.color.ColorDialog
 import com.maxkeppeler.sheets.color.models.ColorConfig
 import com.maxkeppeler.sheets.color.models.ColorSelection
-import com.maxkeppeler.sheets.color.models.MultipleColors
 import com.maxkeppeler.sheets.option.OptionDialog
 import com.maxkeppeler.sheets.option.models.DisplayMode
 import com.maxkeppeler.sheets.option.models.Option
@@ -77,8 +56,6 @@ fun TodoItemView(
     navController:NavController,
     item: TodoItem,
     modifyItem: (item: TodoItem) -> Unit,
-    onDeleteItem: (item: TodoItem) -> Unit,
-    setOnCurrentItem:(item:TodoItem)->Unit
 ) {
 
     val (currentTag, setCurrentTag) = remember { mutableStateOf(item.tag) }
@@ -120,7 +97,7 @@ fun TodoItemView(
 
     OptionDialog(
         state = taskTypeState,
-        selection = OptionSelection.Single(options) { index, option ->
+        selection = OptionSelection.Single(options) { _, option ->
             item.tag = option.titleText
             item.hasTag = true
             setCurrentTag(option.titleText)
@@ -149,142 +126,117 @@ fun TodoItemView(
             templateColors = templateColors
         )
     )
-
-    val show = remember { mutableStateOf(true) }
-    val dismissState = rememberDismissState(
-        confirmValueChange = {
-            if (it == DismissValue.DismissedToEnd || it == DismissValue.DismissedToStart) {
-                show.value = false
-                onDeleteItem(item)
-                true
-            } else false
-        }, positionalThreshold = { 100.dp.toPx() }
-    )
-
-
-    AnimatedVisibility(
-        show.value, exit = fadeOut(spring())
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp)
+            .clickable {
+                navController.navigate("edit")
+            },
+        elevation = CardDefaults.cardElevation(defaultElevation = 20.dp)
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(rowHeight)
+                .background(itemColor, shape = RoundedCornerShape(8.dp)),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .background(MaterialTheme.colorScheme.background)
+                    .height(rowHeight),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    painterResource(id = getLeftIconId(currentTag.toString())),
+                    tint = getLeftIconColor(currentTag.toString()),
+                    contentDescription = "",
+                    modifier = Modifier.clickable {
+                        taskTypeState.show()
+                    }
+                )
 
-        SwipeToDismiss(
-            state = dismissState,
-            background = { DismissBackground(dismissState) },
-            dismissContent = {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp)
-                        .clickable {
-                            setOnCurrentItem(item)
-                            navController.navigate("edit")
-                        },
-                    elevation = CardDefaults.cardElevation(defaultElevation = 20.dp)
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(1.dp)
+                    .background(selectedColor)
+            )
+            Column(
+                modifier = Modifier
+                    .weight(5f)
+                    .fillMaxHeight()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(5.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(15.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(rowHeight)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(itemColor, shape = RoundedCornerShape(8.dp)),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .background(MaterialTheme.colorScheme.background)
-                                .height(rowHeight),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(
-                                painterResource(id = getLeftIconId(currentTag.toString())),
-                                tint = getLeftIconColor(currentTag.toString()),
-                                contentDescription = "",
-                                modifier = Modifier.clickable {
-                                    taskTypeState.show()
-                                }
-                            )
-
-                        }
-                        Box(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .width(1.dp)
-                                .background(selectedColor)
+                    Text(
+                        text = DateFormat.getInstance().format(item.time),
+                        fontSize = MaterialTheme.typography.labelSmall.fontSize
+                    )
+                    if (item.hasInterval && item.interval != null) {
+                        Text(
+                            text = "${item.intervalText}",
+                            fontSize = MaterialTheme.typography.labelSmall.fontSize
                         )
-                        Column(
-                            modifier = Modifier
-                                .weight(5f)
-                                .fillMaxHeight()
-                                .background(MaterialTheme.colorScheme.background)
-                                .padding(horizontal = 8.dp, vertical = 4.dp),
-                            verticalArrangement = Arrangement.spacedBy(5.dp),
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(15.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = DateFormat.getInstance().format(item.time),
-                                    fontSize = MaterialTheme.typography.labelSmall.fontSize
-                                )
-                                if (item.hasInterval && item.interval != null) {
-                                    Text(
-                                        text = "${item.intervalText}",
-                                        fontSize = MaterialTheme.typography.labelSmall.fontSize
-                                    )
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.baseline_repeat_24),
-                                        modifier = Modifier.size(12.dp),
-                                        contentDescription = "",
-                                        tint = itemColor
-                                    )
-                                }
-                            }
-                            Text(
-                                text = item.title,
-                                fontSize = MaterialTheme.typography.labelLarge.fontSize,
-                                maxLines = 1,
-                                overflow = TextOverflow.Clip,
-                                style = TextStyle(textDecoration = if (item.hasTag && item.tag == "Iptal") TextDecoration.LineThrough else TextDecoration.None)
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .width(1.dp)
-                                .background(selectedColor)
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_repeat_24),
+                            modifier = Modifier.size(12.dp),
+                            contentDescription = "",
+                            tint = itemColor
                         )
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                                .background(MaterialTheme.colorScheme.background),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .height(10.dp)
-                                    .width(10.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(selectedColor)
-                                    .clickable {
-                                        colorState.show()
-                                    }
-                            )
-                        }
                     }
                 }
-            })
+                Text(
+                    text = item.title,
+                    fontSize = MaterialTheme.typography.labelLarge.fontSize,
+                    maxLines = 1,
+                    overflow = TextOverflow.Clip,
+                    style = TextStyle(textDecoration = if (item.hasTag && item.tag == "Iptal") TextDecoration.LineThrough else TextDecoration.None)
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(1.dp)
+                    .background(selectedColor)
+            )
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .background(MaterialTheme.colorScheme.background),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(
+                    modifier = Modifier
+                        .height(10.dp)
+                        .width(10.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(selectedColor)
+                        .clickable {
+                            colorState.show()
+                        }
+                )
+            }
+        }
     }
 
 
 }
 
 fun getLeftIconId(currentTag: String): Int {
-    var id = if (currentTag == "İptal") {
+    val id = if (currentTag == "İptal") {
         (R.drawable.baseline_error_outline_24)
     } else if (currentTag == "Tamam") {
         (R.drawable.baseline_task_alt_24)
@@ -298,53 +250,25 @@ fun getLeftIconId(currentTag: String): Int {
     return id
 
 }
-
 @Composable
 fun getLeftIconColor(currentTag: String): Color {
-    var color = if (currentTag == "İptal") {
-        Color(33, 150, 243, 255)
-    } else if (currentTag == "Tamam") {
-        Color(7, 175, 69, 255)
-    } else if (currentTag == "Devam") {
-        Color(255, 152, 0, 255)
-    } else if (currentTag == "Başarısız") {
-        Color(244, 67, 54, 255)
-    } else {
-        MaterialTheme.colorScheme.background
+    val color = when (currentTag) {
+        "İptal" -> {
+            Color(33, 150, 243, 255)
+        }
+        "Tamam" -> {
+            Color(7, 175, 69, 255)
+        }
+        "Devam" -> {
+            Color(255, 152, 0, 255)
+        }
+        "Başarısız" -> {
+            Color(244, 67, 54, 255)
+        }
+        else -> {
+            MaterialTheme.colorScheme.background
+        }
     }
     return color
 
-}
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DismissBackground(dismissState: DismissState) {
-    val color = when (dismissState.dismissDirection) {
-        DismissDirection.StartToEnd -> Color.Transparent
-        DismissDirection.EndToStart -> Color.Transparent
-        null -> Color.Transparent
-    }
-    val direction = dismissState.dismissDirection
-
-    Row(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color)
-            .padding(12.dp, 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        if (direction == DismissDirection.StartToEnd) Icon(
-            Icons.Default.Delete,
-            contentDescription = "delete",
-            tint = Color.Red
-        )
-        Spacer(modifier = Modifier)
-        if (direction == DismissDirection.EndToStart) Icon(
-            Icons.Default.Delete,
-            contentDescription = "delete",
-            tint = Color.Red
-        )
-    }
 }

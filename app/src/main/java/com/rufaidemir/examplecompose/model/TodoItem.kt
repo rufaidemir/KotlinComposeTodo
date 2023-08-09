@@ -11,7 +11,7 @@ data class TodoItem(
     var hasColor: Boolean,
     var color: Int? =null,
     val hasTime: Boolean,
-    val time: Long? =null,
+    val time: Long,
     val hasInterval:Boolean,
     val interval: Long? =null,
     val intervalText: String? =null,
